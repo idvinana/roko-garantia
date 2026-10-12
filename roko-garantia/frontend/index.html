@@ -2,44 +2,74 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Garantia e autenticidade — ROKO IKIGAI STUDIO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500&family=Roboto:wght@300;400;500&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head><body>
 <div id="toast"></div>
 <main>
 <div id="view-app">
-<header class="brand"><small>ROKO IKIGAI STUDIO</small><h1>Garantia e autenticidade</h1>
-<div class="conn"><span id="c-admin">Backend Admin…</span><span id="c-verif">Backend de Verificação…</span></div></header>
-<nav class="nav" id="nav">
-<button data-go="sec-ver">Verificar</button><button data-go="sec-ativar">Ativar garantia</button><button data-go="sec-login">Administração</button>
-<button class="adm hide" data-go="sec-ped">Pedidos</button><button class="adm hide" data-go="sec-cat">Catálogo</button><button class="adm hide" data-go="sec-gar">Garantias</button><button class="adm hide" data-go="sec-vlog">Verificações</button>
+
+<header class="top">
+<div class="logo">ROKO IKIGAI<small>STUDIO</small></div>
+<button class="themebtn" id="themebtn" type="button" aria-label="Alternar tema claro ou escuro">Tema</button>
+<nav class="tabs" id="nav" role="tablist" aria-label="Seções">
+<button role="tab" data-tab="verify" aria-selected="true">Verificar autenticidade</button>
+<button role="tab" data-tab="activate" aria-selected="false">Ativar garantia</button>
+<button role="tab" data-tab="admin" aria-selected="false">Administração</button>
 </nav>
+<div class="conn"><span id="c-admin">Backend Admin…</span><span id="c-verif">Backend de Verificação…</span></div>
+</header>
 
 <!-- 1 · VERIFICADOR (Backend de Verificação) -->
 <section id="sec-ver">
-<div class="brand"><div class="bk">BACKEND DE VERIFICAÇÃO</div><h1>Verificador de autenticidade</h1><p class="sub">Confirme se o seu óculos é original.</p></div>
-<div class="card"><label for="vin">ID DE VALIDAÇÃO</label><input id="vin" placeholder="RKO-XXXX-XXXX" autocapitalize="characters" autocomplete="off"><div class="err" id="verr"></div><button class="full" id="vgo">VERIFICAR</button>
-<div class="btns" style="margin-top:14px"><button class="ghost" id="vcam" style="flex:1;margin-top:0">ESCANEAR QR</button><button class="ghost" id="vimg" style="flex:1;margin-top:0">LER QR DE UMA FOTO</button></div>
+<div class="hero"><img src="img/capa.jpg" alt="Casal sentado na areia de uma enseada, os dois usando óculos escuros, com o mar e um barco ao fundo"><span>ROKO IKIGAI · Designed with intention</span></div>
+<div class="eyebrow">Authenticity &amp; Care</div>
+<h1>A autenticidade está nos detalhes.</h1>
+<p class="lead">Confirme a originalidade do seu ROKO IKIGAI.</p>
+<div class="card">
+<div class="field"><label class="lbl" for="vin">ID DE VALIDAÇÃO</label><input id="vin" placeholder="RKO-XXXX-XXXX" autocapitalize="characters" autocomplete="off"></div>
+<div class="err" id="verr"></div>
+<button class="full" id="vgo">VERIFICAR AUTENTICIDADE <span aria-hidden="true">→</span></button>
+<div class="or">OU</div>
+<button class="ghost" id="vcam">▦&nbsp; ESCANEAR QR</button>
+<button class="ghost" id="vimg">▧&nbsp; LER QR DE UMA FOTO</button>
 <p class="hint center" id="vstat">Leitor de QR: carregando…</p>
-<button class="ghost full hide" id="vsnapbtn">TIRAR FOTO DO QR COM A CÂMERA DO CELULAR</button>
+<button class="ghost hide" id="vsnapbtn">TIRAR FOTO DO QR COM A CÂMERA DO CELULAR</button>
 <input type="file" id="vfile" accept="image/*" class="hide"><input type="file" id="vsnap" accept="image/*" capture="environment" class="hide">
-<div id="camwrap" class="hide"><video id="camv" playsinline muted autoplay style="width:100%;border-radius:10px;margin-top:12px;background:#000"></video><p class="hint center">Aponte a câmera para o QR Code do certificado</p><button class="ghost full" id="camstop" style="margin-top:8px">PARAR CÂMERA</button></div>
-<p class="hint">O ID está no certificado e no QR Code da peça. Nenhum dado pessoal é exibido.</p></div>
+<div id="camwrap" class="hide"><video id="camv" playsinline muted autoplay></video><p class="hint center">Aponte a câmera para o QR Code do certificado</p><button class="ghost" id="camstop">PARAR CÂMERA</button></div>
+<p class="hint center">O ID está no certificado e no QR Code da peça. Nenhum dado pessoal é exibido.</p></div>
 <div id="vres"></div>
+<div class="features">
+<div class="feat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><h2>Autenticidade verificada</h2><p>Cada peça possui um ID único para consulta de originalidade e procedência.</p></div>
+<div class="feat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 6.3L21 12l-6.8 2.7L12 21l-2.2-6.3L3 12l6.8-2.7z"/></svg><h2>Garantia do produto</h2><p>Registre sua compra e consulte as informações de garantia em um só lugar.</p></div>
+<div class="feat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6z"/></svg><h2>Privacidade protegida</h2><p>Uma experiência clara, cuidadosa e feita para proteger os dados do cliente.</p></div>
+</div>
 </section>
 
 <!-- 2 · ATIVAÇÃO (Backend Admin) -->
-<section id="sec-ativar">
-<div class="brand"><div class="bk">BACKEND ADMIN · ÁREA DO CLIENTE</div><h1 id="atitle">Ative sua garantia</h1><p class="sub" id="asub">Valide a autenticidade do seu óculos em segundos.</p></div>
-<div class="card" id="af"><label for="aped">Nº DO PEDIDO</label><input id="aped" inputmode="numeric" placeholder="Ex.: 10482" autocomplete="off">
-<label for="amail">E-MAIL DA COMPRA</label><input id="amail" type="email" placeholder="voce@email.com" autocomplete="email"><div class="err" id="aerr"></div>
-<button class="full" id="ago">ATIVAR GARANTIA</button><p class="hint">Seus dados são usados apenas para confirmar a compra e emitir o certificado, conforme a LGPD.</p></div>
+<section id="sec-ativar" class="hide">
+<div class="eyebrow">Product Care</div>
+<h1 id="atitle">Ative sua garantia.</h1>
+<p class="lead" id="asub">Valide a autenticidade do seu óculos em segundos.</p>
+<div class="card" id="af">
+<span class="lbl sect">Dados da compra</span>
+<div class="field"><label for="aped">Nº DO PEDIDO</label><input id="aped" inputmode="numeric" placeholder="Ex.: 10482" autocomplete="off"></div>
+<div class="field"><label for="amail">E-MAIL DA COMPRA</label><input id="amail" type="email" placeholder="voce@email.com" autocomplete="email"></div>
+<div class="err" id="aerr"></div>
+<button class="full" id="ago">ATIVAR GARANTIA</button>
+<p class="hint center">Seus dados são usados apenas para confirmar a compra e emitir o certificado, conforme a LGPD.</p></div>
 <div class="card hide" id="ares"><div class="okb">✓ GARANTIA ATIVADA</div><div id="aunits"></div>
 <p class="hint center">Cópia enviada para <b id="aem"></b></p><button class="ghost full" id="aagain">VALIDAR OUTRA PEÇA</button></div>
 </section>
 
-<!-- 3 · ADMINISTRAÇÃO: cada backend tem seu próprio login -->
+<!-- 3 · ADMINISTRAÇÃO -->
+<div id="tab-admin" class="hide">
+
 <section id="sec-login">
-<div class="brand"><h1>Administração</h1><p class="sub">Cada backend tem a sua própria página de login.</p></div>
+<div class="eyebrow">Restricted Area</div>
+<h1>Administração</h1>
+<p class="lead">Cada backend tem a sua própria página de login.</p>
 <div class="grid2">
 <div class="card"><div class="bk">BACKEND ADMIN</div><p class="hint" id="st-admin">Não conectado</p><div class="btns"><button id="in-admin">ENTRAR</button><button class="ghost hide" id="out-admin">SAIR</button></div></div>
 <div class="card"><div class="bk">BACKEND DE VERIFICAÇÃO</div><p class="hint" id="st-verif">Não conectado</p><div class="btns"><button id="in-verif">ENTRAR</button><button class="ghost hide" id="out-verif">SAIR</button></div></div>
@@ -49,10 +79,45 @@
 <div class="err" id="pwerr"></div><button id="pwgo">ALTERAR SENHA</button></div>
 </section>
 
-<!-- 4 · BACKEND ADMIN: pedidos, catálogo, garantias -->
-<section id="sec-admin" class="hide">
-<div class="brand"><div class="bk">BACKEND ADMIN</div><h1>Pedidos, catálogo e garantias</h1></div>
+<div class="admin hide" id="adminApp">
+<aside class="side">
+<div class="logo">ROKO IKIGAI<small>STUDIO ADMIN</small></div>
+<hr>
+<h4>WORKSPACE</h4>
+<div class="menu" id="menu">
+<button data-v="geral" aria-current="page">▦ Visão geral</button>
+<button data-v="produtos" data-need="admin">◇ Produtos</button>
+<button data-v="pedidos" data-need="admin">▤ Pedidos e garantias</button>
+<button data-v="verif" data-need="verif">✓ Verificações</button>
+</div>
+<hr>
+<h4>SESSÃO</h4>
+<div class="menu"><button id="menu-sessao">⇄ Conexões e senha</button></div>
+</aside>
+<div class="main">
+
+<div class="av" id="v-geral">
+<div class="eyebrow">Admin Workspace</div><h1>Visão geral</h1>
+<h2 class="sh">Backend Admin</h2>
 <div class="sync" id="async"></div><div class="stats" id="astats"></div>
+<h2 class="sh">Backend de Verificação</h2>
+<div id="valerta"></div><div class="stats" id="vstats"></div>
+</div>
+
+<div class="av hide" id="v-produtos">
+<div class="eyebrow">Admin Workspace</div><h1>Produtos</h1>
+<div class="card" id="sec-cat"><h2>Catálogo de modelos</h2><div id="cat"></div>
+<h2 id="cth" class="sh2">Novo modelo</h2>
+<div class="grid">
+<div><label for="c1">NOME DO MODELO</label><input id="c1"></div><div><label for="c2">COR DA ARMAÇÃO</label><input id="c2"></div><div><label for="c3">LENTE</label><input id="c3"></div>
+<div><label for="c4">MATERIAL</label><input id="c4" value="Acetato"></div><div><label for="c5">TAMANHO</label><input id="c5" value="52 · 20 · 145 mm"></div><div><label for="c6">PROTEÇÃO</label><input id="c6" value="UV400"></div>
+<div><label for="c7">COR DA ARMAÇÃO (VISUAL)</label><input id="c7" type="color" value="#0b0b0c"></div><div><label for="c8">COR DA LENTE (VISUAL)</label><input id="c8" type="color" value="#3b3b40"></div>
+</div><div class="err" id="cerr"></div>
+<div class="btns"><button id="csave">SALVAR MODELO</button><button class="ghost hide" id="ccancel">Cancelar</button></div></div>
+</div>
+
+<div class="av hide" id="v-pedidos">
+<div class="eyebrow">Admin Workspace</div><h1>Pedidos e garantias</h1>
 <div class="card" id="sec-ped"><h2 id="fh">Cadastrar pedido</h2>
 <div class="grid">
 <div><label for="f1">Nº DO PEDIDO</label><input id="f1" placeholder="10484"></div>
@@ -63,29 +128,21 @@
 <div><label for="f6">QUANTIDADE</label><input id="f6" type="number" min="1" max="20" value="1"></div>
 </div><div class="err" id="ferr"></div>
 <div class="btns"><button id="save">CADASTRAR</button><button class="ghost hide" id="pdfp">CERTIFICADOS DO PEDIDO (PDF)</button><button class="ghost hide" id="cancel">Cancelar edição</button></div></div>
-<div class="card" id="sec-cat"><h2>Catálogo de modelos</h2><div id="cat"></div>
-<h2 id="cth" style="margin-top:18px">Novo modelo</h2>
-<div class="grid">
-<div><label for="c1">NOME DO MODELO</label><input id="c1"></div><div><label for="c2">COR DA ARMAÇÃO</label><input id="c2"></div><div><label for="c3">LENTE</label><input id="c3"></div>
-<div><label for="c4">MATERIAL</label><input id="c4" value="Acetato"></div><div><label for="c5">TAMANHO</label><input id="c5" value="52 · 20 · 145 mm"></div><div><label for="c6">PROTEÇÃO</label><input id="c6" value="UV400"></div>
-<div><label for="c7">COR DA ARMAÇÃO (VISUAL)</label><input id="c7" type="color" value="#0b0b0c"></div><div><label for="c8">COR DA LENTE (VISUAL)</label><input id="c8" type="color" value="#3b3b40"></div>
-</div><div class="err" id="cerr"></div>
-<div class="btns"><button id="csave">SALVAR MODELO</button><button class="ghost hide" id="ccancel">Cancelar</button></div></div>
 <div class="card" id="sec-gar"><h2>Garantias</h2>
 <div class="filters"><input id="aq" placeholder="Buscar pedido, e-mail, cliente, modelo, série ou ID…"><select id="ast"><option value="">Todas</option><option>pendente</option><option>ativa</option><option>revogada</option></select></div>
 <div class="tw"><table><thead><tr><th>PEDIDO</th><th>CLIENTE</th><th>MODELO</th><th>SÉRIE</th><th>ID</th><th>STATUS</th><th>VALIDADE</th><th>AÇÕES</th></tr></thead><tbody id="atb"></tbody></table></div>
-<div class="btns" style="margin-top:14px"><button class="ghost sm" id="acsv">Exportar CSV</button><button class="ghost sm" id="aimp">Importar CSV</button><input type="file" id="aimpf" accept=".csv,text/csv" class="hide"></div>
-<div class="hint" id="aimpr" style="margin-top:8px"></div><p class="hint">CSV: numero, email, data_compra (obrigatórias); cpf, cliente, produto, modelo (nome do catálogo), quantidade (opcionais).</p></div>
-</section>
+<div class="btns"><button class="ghost sm" id="acsv">Exportar CSV</button><button class="ghost sm" id="aimp">Importar CSV</button><input type="file" id="aimpf" accept=".csv,text/csv" class="hide"></div>
+<div class="hint" id="aimpr"></div><p class="hint">CSV: numero, email, data_compra (obrigatórias); cpf, cliente, produto, modelo (nome do catálogo), quantidade (opcionais).</p></div>
+</div>
 
-<!-- 5 · BACKEND DE VERIFICAÇÃO: registro -->
-<section id="sec-vlog" class="hide">
-<div class="brand"><div class="bk">BACKEND DE VERIFICAÇÃO</div><h1>Registro de verificações</h1><p class="sub" id="vsyncinfo"></p></div>
-<div id="valerta"></div><div class="stats" id="vstats" style="grid-template-columns:repeat(4,1fr)"></div>
+<div class="av hide" id="v-verif">
+<div class="eyebrow">Admin Workspace</div><h1>Verificações</h1>
+<p class="sub" id="vsyncinfo"></p>
+<div id="sec-vlog">
 <div class="card"><h2>Consultas recentes</h2>
 <div class="filters"><input id="vq" placeholder="Filtrar por ID…"><select id="ves"><option value="">Todos os resultados</option><option>ativa</option><option>pendente</option><option>expirada</option><option>revogada</option><option>nao_encontrado</option></select></div>
 <div class="tw narrow"><table><thead><tr><th>QUANDO</th><th>ID</th><th>RESULTADO</th><th>ORIGEM</th></tr></thead><tbody id="vtb"></tbody></table></div>
-<div class="btns" style="margin-top:14px"><button class="ghost sm" id="vrefresh">Atualizar</button><button class="ghost sm" id="vcsv">Exportar consultas</button></div></div>
+<div class="btns"><button class="ghost sm" id="vrefresh">Atualizar</button><button class="ghost sm" id="vcsv">Exportar consultas</button></div></div>
 <div class="card"><h2>Peças registradas para verificação</h2><div class="filters"><input id="vuq" placeholder="Buscar ID, série ou modelo…"></div>
 <div class="tw narrow"><table><thead><tr><th>ID</th><th>SÉRIE</th><th>MODELO</th><th>STATUS</th><th>VÁLIDA ATÉ</th><th>ORIGEM</th><th></th></tr></thead><tbody id="vub"></tbody></table></div>
 <p class="hint">Peças do Backend Admin chegam por sincronização. Peças cadastradas ou editadas aqui ficam <b>travadas</b>: a sincronização não as sobrescreve. Aqui não há nome, e-mail nem CPF de clientes.</p></div>
@@ -106,30 +163,46 @@
 <div><label for="u13">GARANTIA VÁLIDA ATÉ</label><input id="u13" type="date"></div>
 <div><label for="u14">ATIVADA EM (OPCIONAL)</label><input id="u14" type="date"></div>
 </div>
-<p class="hint hide" id="ulibw"><label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0"><input id="ulib" type="checkbox" style="width:auto;margin:0"> Voltar a receber atualizações do Backend Admin (descarta esta edição na próxima sincronização)</label></p>
+<p class="hint hide" id="ulibw"><label class="chk"><input id="ulib" type="checkbox"> Voltar a receber atualizações do Backend Admin (descarta esta edição na próxima sincronização)</label></p>
 <div class="err" id="uerr"></div>
 <div class="btns"><button id="usave">SALVAR PEÇA</button><button class="ghost hide" id="ucancel">Cancelar edição</button></div></div>
-</section>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<footer>
+<div class="frow"><div class="logo">ROKO IKIGAI<small>STUDIO</small></div><span>ROKO IKIGAI STUDIO &nbsp; © 2026</span></div>
+<span>More than eyewear. A way of life.</span>
+</footer>
 </div>
 
 <!-- PÁGINA DE LOGIN · BACKEND ADMIN  (#/login/admin) -->
 <section id="view-login-admin" class="hide">
-<div class="brand"><small>ROKO IKIGAI STUDIO</small><br><div class="bk" style="margin-top:10px">BACKEND ADMIN</div><h1>Entrar na administração</h1><p class="sub">Pedidos, catálogo, garantias e certificados.</p></div>
-<form class="card" id="fm-admin" style="max-width:420px;margin:0 auto" autocomplete="on">
-<label for="la-user">USUÁRIO</label><input id="la-user" autocomplete="username" autocapitalize="none" spellcheck="false">
-<label for="la-pass">SENHA</label><input id="la-pass" type="password" autocomplete="current-password">
+<div class="logo center-logo">ROKO IKIGAI<small>STUDIO</small></div>
+<div class="eyebrow">Backend Admin</div>
+<h1>Entrar na administração</h1>
+<p class="lead">Pedidos, catálogo, garantias e certificados.</p>
+<form class="card narrow-card" id="fm-admin" autocomplete="on">
+<div class="field"><label for="la-user">USUÁRIO</label><input id="la-user" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+<div class="field"><label for="la-pass">SENHA</label><input id="la-pass" type="password" autocomplete="current-password"></div>
 <div class="err" id="la-err"></div><button class="full" id="la-go" type="submit">ENTRAR</button>
-<p class="hint center" style="margin-top:14px"><a class="lnk" href="#/">← Voltar ao site</a> · <a class="lnk" href="#/login/verificacao">Entrar no Backend de Verificação</a></p></form>
+<p class="hint center links"><a class="lnk" href="#/">← Voltar ao site</a> · <a class="lnk" href="#/login/verificacao">Entrar no Backend de Verificação</a></p></form>
 </section>
 
 <!-- PÁGINA DE LOGIN · BACKEND DE VERIFICAÇÃO  (#/login/verificacao) -->
 <section id="view-login-verif" class="hide">
-<div class="brand"><small>ROKO IKIGAI STUDIO</small><br><div class="bk" style="margin-top:10px">BACKEND DE VERIFICAÇÃO</div><h1>Entrar no registro de verificações</h1><p class="sub">Consultas, alertas e peças sincronizadas.</p></div>
-<form class="card" id="fm-verif" style="max-width:420px;margin:0 auto" autocomplete="on">
-<label for="lv-user">USUÁRIO</label><input id="lv-user" autocomplete="username" autocapitalize="none" spellcheck="false">
-<label for="lv-pass">SENHA</label><input id="lv-pass" type="password" autocomplete="current-password">
+<div class="logo center-logo">ROKO IKIGAI<small>STUDIO</small></div>
+<div class="eyebrow">Backend de Verificação</div>
+<h1>Entrar no registro de verificações</h1>
+<p class="lead">Consultas, alertas e peças sincronizadas.</p>
+<form class="card narrow-card" id="fm-verif" autocomplete="on">
+<div class="field"><label for="lv-user">USUÁRIO</label><input id="lv-user" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+<div class="field"><label for="lv-pass">SENHA</label><input id="lv-pass" type="password" autocomplete="current-password"></div>
 <div class="err" id="lv-err"></div><button class="full" id="lv-go" type="submit">ENTRAR</button>
-<p class="hint center" style="margin-top:14px"><a class="lnk" href="#/">← Voltar ao site</a> · <a class="lnk" href="#/login/admin">Entrar no Backend Admin</a></p></form>
+<p class="hint center links"><a class="lnk" href="#/">← Voltar ao site</a> · <a class="lnk" href="#/login/admin">Entrar no Backend Admin</a></p></form>
 </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>

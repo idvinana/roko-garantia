@@ -29,7 +29,7 @@ Os QR dos certificados usam rotas por hash, então não precisa configurar redir
 - `https://SEU-SITE/#/ativar` → ativação da garantia
 
 ## Estrutura
-`index.html` · `css/style.css` · `js/config.js` (endereços) · `util.js` (chamadas às APIs) · `card.js` (cartão da peça e QR) · `verificar.js` (verificador + leitor de QR) · `ativar.js` · `admin.js` · `verificacoes.js` · `main.js` (login, navegação, rotas).
+`index.html` · `img/capa.jpg` (foto do topo) · `css/style.css` · `js/config.js` (endereços) · `util.js` (chamadas às APIs) · `card.js` (cartão da peça e QR) · `verificar.js` (verificador + leitor de QR) · `ativar.js` · `admin.js` · `verificacoes.js` · `main.js` (login, navegação, rotas).
 
 ## Administração e login
 Cada backend tem a sua página de login (usuário e senha), dentro deste mesmo site:

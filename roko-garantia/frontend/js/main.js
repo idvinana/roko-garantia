@@ -1,11 +1,27 @@
 // Inicialização, navegação, login (um por backend) e rotas por hash
 (function(){var RK=window.RK,$=RK.$,C=RK.cfg,NAMES={admin:"Backend Admin",verif:"Backend de Verificação"};
+var TABS={verify:"sec-ver",activate:"sec-ativar",admin:"tab-admin"},curTab="verify",curV="geral";
+function setTab(t){curTab=t;RK.stopCam&&t!=="verify"&&RK.stopCam();
+ Object.keys(TABS).forEach(function(k){$(TABS[k]).classList.toggle("hide",k!==t)});
+ [].forEach.call(document.querySelectorAll("#nav button"),function(b){b.setAttribute("aria-selected",b.dataset.tab===t?"true":"false")})}
+function setView(v){curV=v;[].forEach.call(document.querySelectorAll(".av"),function(e){e.classList.toggle("hide",e.id!=="v-"+v)});
+ [].forEach.call(document.querySelectorAll("#menu button"),function(b){if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")})}
+function openView(v){var need=$("menu").querySelector('[data-v="'+v+'"]').dataset.need;
+ if(need&&!RK.auth[need]){RK.toast("Entre no "+NAMES[need]+" para abrir esta área.");setTab("admin");scrollTo("sec-login");return}
+ setTab("admin");setView(v);scrollTo("adminApp")}
+function scrollTo(id){var t=$(id);if(t&&t.scrollIntoView)t.scrollIntoView({behavior:"smooth",block:"start"})}
+var MAP={"sec-ver":["verify"],"sec-ativar":["activate"],"sec-login":["admin","login"],"sec-admin":["admin","geral"],"sec-cat":["admin","produtos"],"sec-ped":["admin","pedidos"],"sec-gar":["admin","pedidos"],"sec-vlog":["admin","verif"]};
+RK.go=function(id){var m=MAP[id];if(!m){scrollTo(id);return}
+ if(m[0]!=="admin"){setTab(m[0]);window.scrollTo(0,0);return}
+ if(m[1]==="login"){setTab("admin");scrollTo("sec-login");return}
+ openView(m[1])};
 function chip(id,label,url){fetch(url+"/saude").then(function(r){return r.ok?r.json():null},function(){return null}).then(function(j){var e=$(id),ok=!!j;e.className=ok?"on":"off";e.textContent=label+(ok?" ● online":" ● sem conexão");
   var L=/\/\/(localhost|127\.0\.0\.1)/;if(ok&&j.frontend_url&&L.test(j.frontend_url)&&!L.test(location.origin)){e.className="off";e.textContent=label+" ● FRONTEND_URL aponta para localhost: os QR Codes não abrem no celular"}})}
 function showView(v){["view-app","view-login-admin","view-login-verif"].forEach(function(id){$(id).classList.toggle("hide",id!==v)})}
 function render(){var a=RK.auth;
- $("sec-admin").classList.toggle("hide",!a.admin);$("sec-vlog").classList.toggle("hide",!a.verif);
- [].forEach.call(document.querySelectorAll("#nav .adm"),function(b){var g=b.dataset.go;b.classList.toggle("hide",g==="sec-vlog"?!a.verif:!a.admin)});
+ $("adminApp").classList.toggle("hide",!(a.admin||a.verif));
+ [].forEach.call(document.querySelectorAll("#menu button[data-need]"),function(b){b.classList.toggle("locked",!a[b.dataset.need])});
+ if(!a.admin&&(curV==="produtos"||curV==="pedidos"))curV="geral";if(!a.verif&&curV==="verif")curV="geral";setView(curV);
  ["admin","verif"].forEach(function(k){$("st-"+k).textContent=a[k]?"Conectado ✓":"Não conectado";$("in-"+k).classList.toggle("hide",a[k]);$("out-"+k).classList.toggle("hide",!a[k])});
  $("pwbox").classList.toggle("hide",!(a.admin||a.verif));
  $("pw0").innerHTML=(a.admin?"<option value='admin'>Backend Admin</option>":"")+(a.verif?"<option value='verif'>Backend de Verificação</option>":"");
@@ -25,6 +41,7 @@ function route(){var h=location.hash||"",m=h.match(/^#\/verificar\/(.+)$/);
  if(h==="#/login/admin"){RK.stopCam();showView("view-login-admin");window.scrollTo(0,0);return}
  if(h==="#/login/verificacao"){RK.stopCam();showView("view-login-verif");window.scrollTo(0,0);return}
  showView("view-app");
+ if(!m&&!/^#\/(ativar|admin|verificacoes|administracao)/.test(h))setTab("verify");
  if(m){RK.go("sec-ver");RK.verify(decodeURIComponent(m[1]),"qr");return}
  if(/^#\/ativar/.test(h)){RK.go("sec-ativar");return}
  if(h==="#/admin"){RK.go(RK.auth.admin?"sec-admin":"sec-login");return}
@@ -33,7 +50,11 @@ function route(){var h=location.hash||"",m=h.match(/^#\/verificar\/(.+)$/);
 document.addEventListener("DOMContentLoaded",function(){
  RK.loadKeys();RK.initVerificar();RK.initAtivar();RK.initAdmin();RK.initVlog();
  chip("c-admin",NAMES.admin,C.ADMIN_API);chip("c-verif",NAMES.verif,C.VERIF_API);
- $("nav").onclick=function(e){var b=e.target.closest("button");if(!b)return;if(b.dataset.go!=="sec-ver")RK.stopCam();RK.go(b.dataset.go)};
+ $("nav").onclick=function(e){var b=e.target.closest("button");if(!b)return;var t=b.dataset.tab;setTab(t);if(t==="admin"&&location.hash!=="#/administracao"){history.replaceState(null,"","#/administracao")}else if(t==="verify")history.replaceState(null,"","#/");else if(t==="activate")history.replaceState(null,"","#/ativar");window.scrollTo(0,0)};
+ $("menu").onclick=function(e){var b=e.target.closest("button");if(b)openView(b.dataset.v)};
+ $("menu-sessao").onclick=function(){scrollTo("sec-login")};
+ $("themebtn").onclick=function(){var r=document.documentElement,d=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark";try{localStorage.setItem("rk_theme",r.dataset.theme)}catch(x){}};
+ try{var th=localStorage.getItem("rk_theme");if(th)document.documentElement.dataset.theme=th}catch(x){}
  $("fm-admin").onsubmit=function(e){e.preventDefault();doLogin("admin")};$("fm-verif").onsubmit=function(e){e.preventDefault();doLogin("verif")};
  $("in-admin").onclick=function(){goHash("#/login/admin")};$("in-verif").onclick=function(){goHash("#/login/verificacao")};
  ["admin","verif"].forEach(function(k){$("out-"+k).onclick=function(){RK.keys[k]="";RK.auth[k]=false;RK.saveKeys();render();RK.toast("Você saiu do "+NAMES[k]+".")}});
