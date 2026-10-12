@@ -1,6 +1,6 @@
 """ROKO IKIGAI STUDIO — BACKEND ADMIN (somente API): pedidos, catálogo de modelos, garantias, ativação e certificados.
 Sincroniza o que é público (sem dados pessoais) com o BACKEND DE VERIFICAÇÃO."""
-import os, re, csv, io, hmac, hashlib, sqlite3, secrets, smtplib, time, calendar, logging, json, threading, urllib.request
+import os, re, unicodedata, csv, io, hmac, hashlib, sqlite3, secrets, smtplib, time, calendar, logging, json, threading, urllib.request
 from datetime import date, datetime, timezone
 from email.message import EmailMessage
 from contextlib import contextmanager
@@ -146,20 +146,34 @@ def push_in(col, vals):
         ch = vals[i:i+500]; push(f"{col} IN ({','.join('?'*len(ch))})", ch)
 
 # ---------- e-mail ----------
-def send_confirmation(to, gs):
+def email_configurado(): return bool(os.getenv("SMTP_HOST"))
+def send_confirmation(to, rows, raise_errors=False):
+    """E-mail com o Certificado (PDF em anexo). rows = linhas do banco (UNIT_SQL). Sem SMTP configurado, apenas registra um aviso no log."""
     host = os.getenv("SMTP_HOST")
-    if not host: return
+    if not host:
+        log.warning("E-mail NÃO enviado para %s: defina SMTP_HOST, SMTP_USER, SMTP_PASS e SMTP_FROM no Render.", to)
+        if raise_errors: raise RuntimeError("E-mail não configurado: defina SMTP_HOST, SMTP_USER, SMTP_PASS e SMTP_FROM nas variáveis do Render.")
+        return False
     try:
-        linhas = "\n\n".join(f"{g['modelo']['n']} · {g['modelo']['cor']} · lente {g['modelo']['lente']}\n  Nº de série: {g['serial']}\n  ID de validação: {g['vid']}\n  Válida até: {g['valida_ate']}\n  Verificar: {FRONTEND_URL}/#/verificar/{g['vid']}" for g in gs)
-        msg = EmailMessage(); msg["Subject"] = f"Sua garantia está ativa — Certificado nº {gs[0]['vid']}"
-        msg["From"] = os.getenv("SMTP_FROM", "ROKO IKIGAI STUDIO <garantia@rokoikigai.com>"); msg["To"] = to
-        msg.set_content("Olá!\n\nSua garantia de 12 meses está ativa. Guarde este e-mail junto à nota fiscal.\n\n" + linhas +
+        us = _units(rows)
+        linhas = "\n\n".join(f"{u['modelo']['n']} · {u['modelo']['cor']} · lente {u['modelo']['lente']}\n  Nº de série: {u['serial']}\n  ID de validação: {u['vid']}\n  Válida até: {u['valida_ate']}\n  Verificar: {FRONTEND_URL}/#/verificar/{u['vid']}" for u in us)
+        msg = EmailMessage(); msg["Subject"] = f"Sua garantia está ativa — Certificado nº {us[0]['vid']}"
+        msg["From"] = os.getenv("SMTP_FROM") or os.getenv("SMTP_USER") or "ROKO IKIGAI STUDIO <garantia@rokoikigai.com>"; msg["To"] = to
+        msg.set_content("Olá!\n\nSua garantia de 12 meses está ativa. O Certificado de Autenticidade segue em anexo (PDF). Guarde este e-mail junto à nota fiscal.\n\n" + linhas +
                         "\n\nPara acionar a garantia, responda este e-mail ou chame @rookoikigai informando o ID de validação.\n\nCoastal purpose. Made with ikigai.\n— ROKO IKIGAI STUDIO")
-        with smtplib.SMTP(host, int(os.getenv("SMTP_PORT", "587")), timeout=15) as s:
-            s.starttls()
+        pdf = build_pdf(us, FRONTEND_URL)
+        msg.add_attachment(pdf, maintype="application", subtype="pdf", filename=f"Certificado-ROKO-IKIGAI-{us[0]['vid']}.pdf")
+        port = int(os.getenv("SMTP_PORT", "587"))
+        if port == 465: s = smtplib.SMTP_SSL(host, port, timeout=25)
+        else: s = smtplib.SMTP(host, port, timeout=25); s.starttls()
+        with s:
             if os.getenv("SMTP_USER"): s.login(os.getenv("SMTP_USER"), os.getenv("SMTP_PASS", ""))
             s.send_message(msg)
-    except Exception as e: log.error("Falha ao enviar e-mail: %s", e)
+        log.info("E-mail com certificado enviado para %s", to); return True
+    except Exception as e:
+        log.error("Falha ao enviar e-mail para %s: %s", to, e)
+        if raise_errors: raise
+        return False
 
 # ---------- limite de tentativas ----------
 _hits: dict = {}
@@ -200,7 +214,8 @@ def create_pedido(c, p: PedidoIn):
 
 # ---------- público: ativação ----------
 class ValidarIn(BaseModel):
-    pedido: str = Field(min_length=1, max_length=40)
+    pedido: Optional[str] = Field(default=None, max_length=40)
+    vid: Optional[str] = Field(default=None, max_length=20)   # ID lido do QR Code da peça (RKO-XXXX-XXXX)
     email: Optional[str] = None
     cpf: Optional[str] = None
 
@@ -208,9 +223,15 @@ class ValidarIn(BaseModel):
 def validar(body: ValidarIn, req: Request, bg: BackgroundTasks):
     rate_limit(req)
     if not body.email and not body.cpf: raise HTTPException(422, "Informe o e-mail ou CPF da compra.")
-    nf = HTTPException(404, "Não encontramos uma compra com esses dados. Confira o número do pedido e o e-mail.")
+    nf = HTTPException(404, "Não encontramos uma compra com esses dados. Confira o e-mail e o código da peça." if body.vid else "Não encontramos uma compra com esses dados. Confira o número do pedido e o e-mail.")
+    if not body.vid and not body.pedido: raise HTTPException(422, "Leia o QR Code da peça ou informe o número do pedido.")
     with db() as c:
-        p = c.execute("SELECT * FROM pedidos WHERE numero=?", (norm_pedido(body.pedido),)).fetchone()
+        if body.vid:   # ativação pelo QR: identifica a peça e confirma a compra pelo e-mail/CPF
+            g = c.execute("SELECT pedido_id FROM garantias WHERE vid=?", (body.vid.strip().upper(),)).fetchone()
+            if not g: raise nf
+            p = c.execute("SELECT * FROM pedidos WHERE id=?", (g["pedido_id"],)).fetchone()
+        else:
+            p = c.execute("SELECT * FROM pedidos WHERE numero=?", (norm_pedido(body.pedido),)).fetchone()
         if not p: raise nf
         ok = (body.email and hmac.compare_digest(norm_email(body.email), p["email"])) or \
              (body.cpf and p["cpf_hash"] and hmac.compare_digest(cpf_hash(body.cpf), p["cpf_hash"]))
@@ -225,7 +246,7 @@ def validar(body: ValidarIn, req: Request, bg: BackgroundTasks):
             c.executemany("UPDATE garantias SET status='ativa', ativada_em=?, ip=? WHERE id=?", [(now_iso(), client_ip(req), i) for i in ids])
             rows = c.execute(Q, (p["id"],)).fetchall()
             bg.add_task(push_in, "g.id", ids)
-            bg.add_task(send_confirmation, p["email"], [unit_public(r) for r in rows if r["status"] == "ativa"])
+            bg.add_task(send_confirmation, p["email"], [r for r in rows if r["status"] == "ativa"])
         return {"ja_ativada": ja, "email": p["email"],
                 "garantias": [unit_public(r) for r in rows if r["status"] != "revogada"]}
 
@@ -249,10 +270,9 @@ def _parse_date(s):
 @app.post("/api/admin/pedidos/importar", tags=["Admin · Pedidos"], dependencies=A)
 async def admin_importar(arquivo: UploadFile = File(...)):
     """CSV: numero,email,data_compra (+ cpf,cliente,produto,modelo,quantidade). 'modelo' = nome do modelo do catálogo."""
-    txt = (await arquivo.read()).decode("utf-8-sig"); l0 = txt.splitlines()[0]
-    sep = ";" if l0.count(";") > l0.count(",") else ","; criados, ign, erros, nums = 0, [], [], []
+    rd = _ler_csv(await arquivo.read()); criados, ign, erros, nums = 0, [], [], []
     with db() as c:
-        for i, r in enumerate(csv.DictReader(io.StringIO(txt), delimiter=sep), start=2):
+        for i, r in enumerate(rd, start=2):
             r = {(k or "").strip().lower(): (v or "").strip() for k, v in r.items()}
             try:
                 mid = None
@@ -342,6 +362,98 @@ def admin_status(vid: str, b: GarantiaPatch):
         r = c.execute(UNIT_SQL + " WHERE g.id=?", (g["id"],)).fetchone()
     push("g.id=?", (g["id"],)); return unit_public(r)
 
+# ----- leitura de planilhas CSV (usada nas importações) -----
+def _ler_csv(raw: bytes):
+    """Aceita CSV do Excel: UTF-8 (com ou sem BOM) ou Windows-1252 (acentos do Excel antigo), separador ; ou ,"""
+    try: txt = raw.decode("utf-8-sig")
+    except UnicodeDecodeError: txt = raw.decode("cp1252", errors="replace")
+    linhas = txt.splitlines()
+    if not linhas or not linhas[0].strip(): raise HTTPException(422, "A planilha está vazia.")
+    l0 = linhas[0]; sep = ";" if l0.count(";") > l0.count(",") else ","
+    return csv.DictReader(io.StringIO(txt), delimiter=sep)
+
+def _chave(k):
+    k = unicodedata.normalize("NFKD", k or "").encode("ascii", "ignore").decode().strip().lower()
+    return re.sub(r"[^a-z0-9]+", "_", k).strip("_")
+
+def _cel(v):
+    """Evita que o Excel execute como fórmula um texto que começa com = + @"""
+    v = "" if v is None else str(v)
+    return "'" + v if v[:1] in ("=", "+", "@") else v
+
+# ----- catálogo de modelos: importação / exportação -----
+CAMPOS_MODELO = ["cor", "lente", "material", "tamanho", "protecao", "cor_hex", "lente_hex"]
+PADRAO_MODELO = {"cor": "-", "lente": "-", "material": "Acetato", "tamanho": "52 · 20 · 145 mm", "protecao": "UV400", "cor_hex": "#0b0b0c", "lente_hex": "#3b3b40"}
+APELIDOS = {"nome": "nome", "modelo": "nome", "cor": "cor", "cor_da_armacao": "cor", "cor_armacao": "cor", "armacao": "cor", "lente": "lente",
+            "material": "material", "tamanho": "tamanho", "protecao": "protecao", "uv": "protecao",
+            "cor_hex": "cor_hex", "hex": "cor_hex", "cor_da_armacao_visual": "cor_hex", "lente_hex": "lente_hex", "hex_lente": "lente_hex", "cor_da_lente_visual": "lente_hex"}
+def _hex(v):
+    v = v.strip().lstrip("#")
+    if re.fullmatch(r"[0-9a-fA-F]{3}", v): v = "".join(ch * 2 for ch in v)
+    if not re.fullmatch(r"[0-9a-fA-F]{6}", v): raise ValueError(f"cor inválida “{v}” (use o formato #0b0b0c)")
+    return "#" + v.lower()
+
+@app.get("/api/admin/modelos/exportar.csv", tags=["Admin · Catálogo"], dependencies=A)
+def modelos_exportar():
+    """Catálogo em CSV (separador ;, abre direto no Excel em português). Pode ser editado e importado de volta."""
+    buf = io.StringIO(); w = csv.writer(buf, delimiter=";", lineterminator="\r\n")
+    w.writerow(["nome"] + CAMPOS_MODELO)
+    with db() as c:
+        for r in c.execute("SELECT * FROM modelos ORDER BY id"):
+            w.writerow([_cel(r["nome"])] + [_cel(r[k]) for k in CAMPOS_MODELO])
+    return StreamingResponse(iter(["\ufeff" + buf.getvalue()]), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": "attachment; filename=catalogo-modelos.csv"})
+
+@app.post("/api/admin/modelos/importar", tags=["Admin · Catálogo"], dependencies=A)
+async def modelos_importar(arquivo: UploadFile = File(...), simular: bool = False, existentes: str = "atualizar"):
+    """CSV com a coluna 'nome' (ou 'modelo') e, opcionalmente: cor, lente, material, tamanho, protecao, cor_hex, lente_hex.
+    Modelo novo é criado; modelo existente (mesmo nome) é atualizado só nos campos preenchidos (ou ignorado, com existentes=ignorar).
+    Tudo ou nada: se houver qualquer linha com erro, nada é gravado. simular=true só confere e mostra o que aconteceria."""
+    if existentes not in ("atualizar", "ignorar"): raise HTTPException(422, "existentes deve ser 'atualizar' ou 'ignorar'.")
+    raw = await arquivo.read()
+    if len(raw) > 1_000_000: raise HTTPException(413, "Arquivo grande demais (máximo 1 MB).")
+    rd = _ler_csv(raw)
+    if "nome" not in {APELIDOS.get(_chave(k)) for k in (rd.fieldnames or [])}:
+        raise HTTPException(422, "A planilha precisa ter a coluna “nome” (ou “modelo”) na primeira linha.")
+    novos = atualizados = sem_mudanca = ignorados = 0; erros, ops, vistos = [], [], {}
+    with db() as c:
+        for i, r in enumerate(rd, start=2):
+            if i > 501: raise HTTPException(422, "Máximo de 500 modelos por importação.")
+            row = {}
+            for k, v in r.items():
+                a = APELIDOS.get(_chave(k))
+                if a and a not in row and not isinstance(v, list):
+                    v = (v or "").strip(); row[a] = v[1:] if v[:2] in ("'=", "'+", "'@") else v
+            if not any(row.values()): continue   # linha em branco
+            try:
+                nome = row.get("nome", "")
+                if not nome: raise ValueError("nome do modelo em branco")
+                if len(nome) > 80: raise ValueError("nome com mais de 80 caracteres")
+                if nome.lower() in vistos: raise ValueError(f"nome repetido na planilha (já aparece na linha {vistos[nome.lower()]})")
+                vistos[nome.lower()] = i
+                for k in ("cor_hex", "lente_hex"):
+                    if row.get(k): row[k] = _hex(row[k])
+                for k in ("cor", "lente", "material", "tamanho", "protecao"):
+                    if len(row.get(k, "")) > 60: raise ValueError(f"“{k}” com mais de 60 caracteres")
+                ex = c.execute("SELECT * FROM modelos WHERE lower(nome)=lower(?)", (nome,)).fetchone()
+                if ex is None:
+                    ops.append(("novo", nome, {k: row.get(k) or PADRAO_MODELO[k] for k in CAMPOS_MODELO}, None)); novos += 1
+                elif existentes == "ignorar": ignorados += 1
+                else:
+                    mud = {k: row[k] for k in CAMPOS_MODELO if row.get(k) and (row[k].lower() != str(ex[k]).lower() if k.endswith("_hex") else row[k] != ex[k])}
+                    if mud: ops.append(("atualizar", ex["nome"], mud, ex["id"])); atualizados += 1
+                    else: sem_mudanca += 1
+            except ValueError as e: erros.append({"linha": i, "erro": str(e)})
+        aplicado = bool(not simular and not erros); ids = []
+        if aplicado:
+            for tipo, nome, vals, mid in ops:
+                if tipo == "novo":
+                    c.execute("INSERT INTO modelos(nome,cor,lente,material,tamanho,protecao,cor_hex,lente_hex) VALUES(?,?,?,?,?,?,?,?)", (nome, *[vals[k] for k in CAMPOS_MODELO]))
+                else:
+                    c.execute(f"UPDATE modelos SET {', '.join(k + '=?' for k in vals)} WHERE id=?", [*vals.values(), mid]); ids.append(mid)
+    for mid in ids: push("g.modelo_id=?", (mid,))   # modelos alterados: reenvia as peças ao Backend de Verificação
+    return {"simulacao": simular, "aplicado": aplicado, "novos": novos, "atualizados": atualizados, "sem_alteracao": sem_mudanca, "ignorados_existentes": ignorados,
+            "erros": erros, "previa": [{"acao": t, "nome": n, "campos": [k for k in v] if t == "atualizar" else []} for t, n, v, _ in ops[:50]]}
+
 # ----- catálogo de modelos -----
 class ModeloIn(BaseModel):
     nome: str = Field(min_length=1, max_length=80)
@@ -418,6 +530,16 @@ def admin_export():
 def _units(rows):
     return [{"produto": r["produto"], "serial": r["serial"], "vid": r["vid"], "data_compra": r["data_compra"], "valida_ate": r["valida_ate"], "modelo": modelo_dict(r)} for r in rows]
 def _pdf(rows, nome): return Response(build_pdf(_units(rows), FRONTEND_URL), media_type="application/pdf", headers={"Content-Disposition": f"inline; filename={nome}"})
+
+@app.post("/api/admin/pedidos/{numero}/enviar-email", tags=["Admin · Certificados"], dependencies=A)
+def reenviar_email(numero: str):
+    """Envia (ou reenvia) o certificado em PDF para o e-mail cadastrado no pedido. Mostra o erro real se o SMTP falhar."""
+    with db() as c:
+        rows = c.execute(UNIT_SQL + " WHERE g.status!='revogada' AND p.numero=? ORDER BY g.id", (norm_pedido(numero),)).fetchall()
+    if not rows: raise HTTPException(404, "Pedido não encontrado ou sem garantias ativas.")
+    try: send_confirmation(rows[0]["email"], rows, raise_errors=True)
+    except Exception as e: raise HTTPException(502, f"Não foi possível enviar: {e}")
+    return {"ok": True, "enviado_para": rows[0]["email"]}
 
 @app.get("/api/admin/garantias/{vid}/certificado.pdf", tags=["Admin · Certificados"], dependencies=A)
 def cert_unidade(vid: str):
