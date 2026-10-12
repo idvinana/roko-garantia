@@ -3,3 +3,4 @@ uvicorn[standard]>=0.29
 python-multipart>=0.0.9
 reportlab>=4.0
 qrcode[pil]>=7.4
+svglib>=1.5
