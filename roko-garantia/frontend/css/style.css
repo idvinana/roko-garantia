@@ -33,7 +33,7 @@ section{scroll-margin-top:1rem}
 header.top{position:relative;padding-top:1.4rem}
 .center-logo{margin:1.6rem auto 0}
 .themebtn{position:absolute;right:0;top:1.5rem;width:auto!important;height:auto!important;margin:0!important;background:none!important;border:1px solid var(--line)!important;border-radius:99px!important;padding:.3rem .75rem!important;font-size:.6875rem!important;letter-spacing:.14em!important;text-transform:uppercase;color:var(--muted)!important}
-nav.tabs{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--line);margin-top:1.4rem;overflow-x:auto}
+nav.tabs{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--line);margin-top:1.4rem;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 nav.tabs button{width:auto;height:auto;margin:0 0 -1px;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:1.15rem .125rem;color:var(--ink);white-space:nowrap;font-size:1rem;letter-spacing:0;text-transform:none}
 nav.tabs button[aria-selected="true"]{border-color:var(--ink)}
 .conn{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem;font-size:.75rem}
@@ -81,7 +81,7 @@ button.sm,td button,.act button,.brow button{width:auto;height:2.5rem;margin:0;p
 .btns:has(button.sm){flex-direction:row;flex-wrap:wrap;justify-content:center;gap:.65rem}
 .or{display:flex;align-items:center;gap:1.1rem;color:var(--muted);letter-spacing:.2em;font-size:.875rem;margin:1.8rem 0 .3rem}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
-video#camv{width:100%;border-radius:.5rem;margin-top:1.5rem;background:#000}
+video#camv,video.camv{width:100%;border-radius:.5rem;margin-top:1.5rem;background:#000}
 /* resultado / cartão da peça */
 .okb{color:var(--ok);font-weight:500;letter-spacing:.14em;text-align:center;font-size:1.0625rem}
 .st{text-align:center;font-weight:500;letter-spacing:.1em;font-size:1.0625rem}
@@ -140,7 +140,7 @@ footer .logo{font-size:1.55rem;color:var(--ink)}
 .alert{border:1px solid var(--bad);background:var(--bad-bg);color:var(--bad);border-radius:.4rem;padding:.9rem 1.1rem;font-size:1rem;margin-bottom:1rem}
 .filters{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:1rem}.filters input{flex:2;min-width:12rem}.filters select{flex:1;min-width:9rem}
 .tw{overflow-x:auto;margin-top:1.1rem;border:1px solid var(--line);border-radius:.3rem}
-table{border-collapse:collapse;width:100%;min-width:56rem;font-size:.9375rem}.tw.narrow table{min-width:34rem}
+table{border-collapse:collapse;width:100%;min-width:64rem;font-size:.9375rem}.tw.narrow table{min-width:34rem}
 th{background:var(--bg);text-align:left;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:1rem;font-weight:500;white-space:nowrap}
 td{padding:1rem;border-top:1px solid var(--line);vertical-align:middle;font-variant-numeric:tabular-nums}
 .act{display:flex;gap:.5rem;flex-wrap:wrap}
@@ -153,3 +153,23 @@ a.lnk{color:var(--ink);text-decoration:underline}
 .links{margin-top:1.5rem}
 #toast{display:none;position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:calc(100% - 32px);background:var(--navy);color:var(--on-navy);border-radius:6px;padding:12px 18px;font-size:14px;z-index:60;text-align:center;line-height:1.5}
 @media(max-width:680px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.card{padding:1.6rem}}
+.qrok{display:flex;justify-content:center;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1.4rem;padding:1.1rem;border-radius:.4rem;background:var(--ok-bg);color:var(--ok);font-size:1.0625rem}
+.qrok b{font-weight:500;letter-spacing:.06em}
+button.linkbtn{width:auto;height:auto;margin:0;padding:0;background:none;border:0;color:var(--ink);text-decoration:underline;text-transform:none;letter-spacing:0;font-size:.9375rem}
+input:disabled{opacity:.5}
+.sel{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:1.2rem}
+.sel label{margin:0}.sel select{width:auto;min-width:10rem;height:3rem;padding:0 .9rem;border:1px solid var(--line);border-radius:.4rem;background:var(--bg);font-size:1.0625rem}
+.qrrow{border-top:1px solid var(--line);padding:1.2rem 0}
+.qrpair{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap}
+.qrone{display:flex;flex-direction:column;align-items:center;gap:.7rem;font-size:.8125rem;letter-spacing:.14em}
+.qrimg{width:12rem;background:#fff;padding:.7rem;border-radius:.4rem;line-height:0}
+
+/* coluna de ações fixa à direita; botões nunca quebram linha */
+.act{flex-wrap:nowrap}.act button,td button{white-space:nowrap;flex:none}
+.tw th:last-child,.tw td:last-child{position:sticky;right:0;z-index:1;white-space:nowrap;box-shadow:-.5rem 0 .6rem -.5rem rgba(0,0,0,.18)}
+.tw td:last-child{background:var(--card)}.tw th:last-child{background:var(--bg)}
+.filters .sm{flex:none;align-self:center}.fcount{margin:.6rem 0 0;text-align:left}
+.filters input[type=search]{flex:1 1 100%}.filters select{flex:1 1 9rem}
+
+/* catálogo: botões Editar/Excluir fixos à direita, sem quebra */
+.brow{flex-wrap:nowrap}.brow>div:first-child{min-width:0;flex:1 1 auto}.brow .btns{flex:none;flex-wrap:nowrap;margin:0;gap:.5rem}.brow button{white-space:nowrap}

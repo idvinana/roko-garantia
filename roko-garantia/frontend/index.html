@@ -54,6 +54,14 @@
 <p class="lead" id="asub">Valide a autenticidade do seu óculos em segundos.</p>
 <div class="card" id="af">
 <span class="lbl sect">Dados da compra</span>
+<button class="ghost first" id="aqcam" type="button">▦&nbsp; ESCANEAR QR DA PEÇA</button>
+<button class="ghost" id="aqimg" type="button">▧&nbsp; LER QR DE UMA FOTO</button>
+<button class="ghost hide" id="aqsnapbtn" type="button">TIRAR FOTO DO QR COM A CÂMERA DO CELULAR</button>
+<input type="file" id="aqfile" accept="image/*" class="hide"><input type="file" id="aqsnap" accept="image/*" capture="environment" class="hide">
+<div id="aqwrap" class="hide"><video id="aqv" class="camv" playsinline muted autoplay></video><p class="hint center">Aponte a câmera para o QR Code do certificado</p><button class="ghost" id="aqstop" type="button">PARAR CÂMERA</button></div>
+<p class="hint center" id="aqstat"></p>
+<div class="qrok hide" id="aqok"><span>✓ Peça lida: <b id="aqid"></b></span><button class="linkbtn" id="aqclear" type="button">trocar</button></div>
+<div class="or">OU</div>
 <div class="field"><label for="aped">Nº DO PEDIDO</label><input id="aped" inputmode="numeric" placeholder="Ex.: 10482" autocomplete="off"></div>
 <div class="field"><label for="amail">E-MAIL DA COMPRA</label><input id="amail" type="email" placeholder="voce@email.com" autocomplete="email"></div>
 <div class="err" id="aerr"></div>
@@ -106,7 +114,12 @@
 
 <div class="av hide" id="v-produtos">
 <div class="eyebrow">Admin Workspace</div><h1>Produtos</h1>
-<div class="card" id="sec-cat"><h2>Catálogo de modelos</h2><div id="cat"></div>
+<div class="card" id="sec-cat"><h2>Catálogo de modelos</h2><div class="filters"><input id="cq" type="search" placeholder="Buscar modelo, cor, lente ou material…"><select id="cuso" aria-label="Uso"><option value="">Todos</option><option value="uso">Em uso</option><option value="livre">Sem uso</option></select><button class="ghost sm" id="cclr" type="button">Limpar</button></div><p class="hint fcount" id="ccount"></p><div id="cat"></div>
+<div class="btns"><button class="ghost sm" id="cexp" type="button">Exportar catálogo (CSV)</button><button class="ghost sm" id="cimp" type="button">Importar catálogo</button><button class="ghost sm" id="ctpl" type="button">Baixar planilha modelo</button></div>
+<div class="sel"><label for="cimode">SE O MODELO JÁ EXISTIR</label><select id="cimode"><option value="atualizar">atualizar</option><option value="ignorar">ignorar</option></select></div>
+<input type="file" id="cimpf" accept=".csv,text/csv" class="hide">
+<div id="cimpr" class="hint"></div><div class="btns"><button class="hide" id="cimpok" type="button">CONFIRMAR IMPORTAÇÃO</button></div>
+<p class="hint">CSV (Excel): coluna <b>nome</b> obrigatória; opcionais: cor, lente, material, tamanho, protecao, cor_hex, lente_hex. O nome identifica o modelo: igual a um existente = atualiza. Antes de gravar, o site mostra o que vai mudar. Se houver erro em alguma linha, nada é gravado.</p>
 <h2 id="cth" class="sh2">Novo modelo</h2>
 <div class="grid">
 <div><label for="c1">NOME DO MODELO</label><input id="c1"></div><div><label for="c2">COR DA ARMAÇÃO</label><input id="c2"></div><div><label for="c3">LENTE</label><input id="c3"></div>
@@ -127,10 +140,12 @@
 <div><label for="f5">MODELO</label><select id="f5"></select></div>
 <div><label for="f6">QUANTIDADE</label><input id="f6" type="number" min="1" max="20" value="1"></div>
 </div><div class="err" id="ferr"></div>
-<div class="btns"><button id="save">CADASTRAR</button><button class="ghost hide" id="pdfp">CERTIFICADOS DO PEDIDO (PDF)</button><button class="ghost hide" id="cancel">Cancelar edição</button></div></div>
+<div class="btns"><button id="save">CADASTRAR</button><button class="ghost hide" id="qrp" type="button">QR CODES DO PEDIDO</button><button class="ghost hide" id="pdfp">CERTIFICADOS DO PEDIDO (PDF)</button><button class="ghost hide" id="cancel">Cancelar edição</button></div></div>
+<div class="card hide" id="qrpan"></div>
 <div class="card" id="sec-gar"><h2>Garantias</h2>
-<div class="filters"><input id="aq" placeholder="Buscar pedido, e-mail, cliente, modelo, série ou ID…"><select id="ast"><option value="">Todas</option><option>pendente</option><option>ativa</option><option>revogada</option></select></div>
-<div class="tw"><table><thead><tr><th>PEDIDO</th><th>CLIENTE</th><th>MODELO</th><th>SÉRIE</th><th>ID</th><th>STATUS</th><th>VALIDADE</th><th>AÇÕES</th></tr></thead><tbody id="atb"></tbody></table></div>
+<div class="filters"><input id="aq" type="search" placeholder="Buscar pedido, e-mail, cliente, série ou ID…"><select id="ast" aria-label="Status"><option value="">Todos os status</option><option value="pendente">Pendentes</option><option value="ativa">Ativas</option><option value="revogada">Revogadas</option></select><select id="amod" aria-label="Modelo"><option value="">Todos os modelos</option></select><button class="ghost sm" id="aclr" type="button">Limpar</button></div>
+<p class="hint fcount" id="acount"></p>
+<div class="tw"><table><thead><tr><th>PEDIDO</th><th>CLIENTE</th><th>MODELO</th><th>SÉRIE</th><th>ID</th><th>STATUS</th><th>VALIDADE</th><th>PEÇA</th><th>AÇÕES</th></tr></thead><tbody id="atb"></tbody></table></div>
 <div class="btns"><button class="ghost sm" id="acsv">Exportar CSV</button><button class="ghost sm" id="aimp">Importar CSV</button><input type="file" id="aimpf" accept=".csv,text/csv" class="hide"></div>
 <div class="hint" id="aimpr"></div><p class="hint">CSV: numero, email, data_compra (obrigatórias); cpf, cliente, produto, modelo (nome do catálogo), quantidade (opcionais).</p></div>
 </div>

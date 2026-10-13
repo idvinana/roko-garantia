@@ -43,7 +43,8 @@ function route(){var h=location.hash||"",m=h.match(/^#\/verificar\/(.+)$/);
  showView("view-app");
  if(!m&&!/^#\/(ativar|admin|verificacoes|administracao)/.test(h))setTab("verify");
  if(m){RK.go("sec-ver");RK.verify(decodeURIComponent(m[1]),"qr");return}
- if(/^#\/ativar/.test(h)){RK.go("sec-ativar");return}
+ var av=h.match(/^#\/ativar\/(.+)$/);
+ if(/^#\/ativar/.test(h)){RK.go("sec-ativar");if(av){var id=RK.idFrom(decodeURIComponent(av[1]));if(id)RK.ativarSetVid(id)}return}
  if(h==="#/admin"){RK.go(RK.auth.admin?"sec-admin":"sec-login");return}
  if(h==="#/verificacoes"){RK.go(RK.auth.verif?"sec-vlog":"sec-login");return}
  if(/^#\/administracao/.test(h))RK.go("sec-login")}
